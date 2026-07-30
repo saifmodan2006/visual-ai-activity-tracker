@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visual AI Activity Tracker</title>
+    <link rel="stylesheet" href="../lib/ui.css" />
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <div class="popup-shell">
+      <div class="popup-topbar">
+        <div>
+          <div class="popup-title">Visual AI Activity Tracker</div>
+          <div class="popup-subtitle" id="popup-status">Loading current session…</div>
+        </div>
+        <button class="button small ghost" id="open-dashboard">Dashboard</button>
+      </div>
+      <div class="popup-card">
+        <div class="popup-session-row">
+          <div>
+            <div class="popup-label">Current session</div>
+            <div class="popup-value" id="session-duration">0m 00s</div>
+          </div>
+          <div class="popup-badge" id="session-category">other</div>
+        </div>
+        <div class="popup-subgrid">
+          <div>
+            <div class="popup-label">Productivity</div>
+            <div class="popup-value small" id="session-score">5/10</div>
+          </div>
+          <div>
+            <div class="popup-label">Site</div>
+            <div class="popup-value small" id="session-site">—</div>
+          </div>
+        </div>
+      </div>
+      <div class="popup-card">
+        <div class="section-title">
+          <h2>Today</h2>
+          <span class="muted" id="sync-status">Local only</span>
+        </div>
+        <div class="popup-stats">
+          <div class="metric"><div class="metric-value" id="today-active">0m</div><div class="metric-label">Active time</div></div>
+          <div class="metric"><div class="metric-value" id="today-productivity">0.0</div><div class="metric-label">Productivity</div></div>
+          <div class="metric"><div class="metric-value" id="today-sites">0</div><div class="metric-label">Sessions</div></div>
+        </div>
+      </div>
+      <div class="popup-card">
+        <div class="section-title">
+          <h2>Quick actions</h2>
+        </div>
+        <div class="row">
+          <button class="button primary" id="toggle-tracking">Pause</button>
+          <button class="button success" id="focus-mode">Focus Mode</button>
+          <button class="button ghost" id="open-options">Settings</button>
+        </div>
+      </div>
+      <div class="popup-card">
+        <div class="section-title">
+          <h2>Last 7 days</h2>
+        </div>
+        <canvas class="chart-canvas" id="weekly-chart" height="180"></canvas>
+      </div>
+    </div>
+    <script type="module" src="popup.js"></script>
+  </body>
+</html>

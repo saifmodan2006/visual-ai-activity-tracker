@@ -1,0 +1,4 @@
+#top-metrics .card { min-height: 120px; }
+#insights-list .insight-item { padding: 14px; border-radius: 16px; border: 1px solid rgba(148,163,184,0.12); background: rgba(2,6,23,0.32); }
+#insights-list .insight-item + .insight-item { margin-top: 10px; }
+#recent-grid { max-height: 480px; overflow: auto; padding-right: 4px; }

@@ -1,0 +1,13 @@
+.popup-shell { width: 380px; padding: 14px; color: var(--text); }
+.popup-topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.popup-title { font-size: 15px; font-weight: 800; }
+.popup-subtitle { color: var(--muted); font-size: 12px; margin-top: 2px; }
+.popup-card { border: 1px solid var(--border); border-radius: 22px; background: rgba(15,23,42,0.8); padding: 14px; margin-top: 12px; }
+.popup-session-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.popup-label { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.popup-value { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+.popup-value.small { font-size: 18px; }
+.popup-badge { padding: 8px 10px; border-radius: 9999px; background: rgba(56,189,248,0.16); border: 1px solid rgba(56,189,248,0.22); font-size: 12px; font-weight: 700; }
+.popup-subgrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.popup-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+#weekly-chart { height: 150px; }

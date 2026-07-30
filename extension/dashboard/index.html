@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visual AI Dashboard</title>
+    <link rel="stylesheet" href="../lib/ui.css" />
+    <link rel="stylesheet" href="dashboard.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="app-frame">
+        <header class="app-header">
+          <div class="brand">
+            <div class="brand-mark"></div>
+            <div>
+              <h1 class="brand-title">Visual AI Activity Tracker</h1>
+              <div class="brand-subtitle">Private, local-first analytics for your own browsing activity</div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <span class="pill primary" id="tracking-pill">Tracking active</span>
+            <button class="button ghost" id="open-options">Settings</button>
+            <button class="button success" id="toggle-focus">Focus Mode</button>
+          </div>
+        </header>
+        <main class="stack" style="padding:24px;">
+          <section class="card-grid cols-4" id="top-metrics">
+            <div class="card metric"><div class="metric-value" id="goal-progress">0%</div><div class="metric-label">Goal progress</div></div>
+            <div class="card metric"><div class="metric-value" id="current-streak">0</div><div class="metric-label">Day streak</div></div>
+            <div class="card metric"><div class="metric-value" id="daily-active">0m</div><div class="metric-label">Active today</div></div>
+            <div class="card metric"><div class="metric-value" id="daily-score">0.0</div><div class="metric-label">Productivity avg</div></div>
+          </section>
+          <section class="grid-2">
+            <div class="card">
+              <div class="section-title"><h2>Category mix</h2><span class="muted">Today</span></div>
+              <canvas class="chart-canvas" id="category-chart"></canvas>
+            </div>
+            <div class="card">
+              <div class="section-title"><h2>Productivity trend</h2><span class="muted">Last 14 days</span></div>
+              <canvas class="chart-canvas" id="trend-chart"></canvas>
+            </div>
+          </section>
+          <section class="grid-2">
+            <div class="card">
+              <div class="section-title"><h2>Activity heatmap</h2><span class="muted">Last 7 days</span></div>
+              <canvas class="chart-canvas tall" id="heatmap-chart"></canvas>
+            </div>
+            <div class="card">
+              <div class="section-title"><h2>Top sites</h2><span class="muted">Today</span></div>
+              <canvas class="chart-canvas tall" id="sites-chart"></canvas>
+            </div>
+          </section>
+          <section class="grid-2">
+            <div class="card">
+              <div class="section-title"><h2>Insights</h2><span class="muted">Generated locally or by AI</span></div>
+              <div class="stack" id="insights-list"></div>
+            </div>
+            <div class="card">
+              <div class="section-title"><h2>Goals</h2><span class="muted">Daily focus target</span></div>
+              <div class="stack">
+                <div class="field">
+                  <label class="label" for="goal-minutes">Goal minutes</label>
+                  <input class="input" id="goal-minutes" type="number" min="7" step="5" />
+                </div>
+                <div class="field">
+                  <label class="label" for="distraction-limit">Distraction limit</label>
+                  <input class="input" id="distraction-limit" type="number" min="0" step="5" />
+                </div>
+                <button class="button primary" id="save-goals">Save goals</button>
+              </div>
+            </div>
+          </section>
+          <section class="card">
+            <div class="section-title"><h2>Recent activity</h2><span class="muted">Latest sessions and thumbnails</span></div>
+            <div class="thumbnail-grid" id="recent-grid"></div>
+          </section>
+        </main>
+      </div>
+    </div>
+
+    <div class="modal-backdrop" id="onboarding-modal">
+      <div class="modal">
+        <h2 style="margin-top:0;">Welcome to Visual AI Activity Tracker</h2>
+        <p class="muted">This extension tracks your own browsing activity locally. Screenshots are optional, you can pause at any time, and you can export or delete your data whenever you want.</p>
+        <div class="divider"></div>
+        <div class="stack">
+          <label class="row"><input type="checkbox" id="agree-checkbox" /> <span>I understand and agree to local activity tracking on my own device.</span></label>
+          <label class="row"><input type="checkbox" id="text-only-checkbox" /> <span>Use text-only mode with no screenshots.</span></label>
+        </div>
+        <div class="divider"></div>
+        <div class="row space-between">
+          <span class="muted">Tracking will not start until you confirm.</span>
+          <button class="button primary" id="accept-onboarding">Start tracking</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="dashboard.js"></script>
+  </body>
+</html>

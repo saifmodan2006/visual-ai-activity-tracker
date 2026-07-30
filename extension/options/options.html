@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visual AI Options</title>
+    <link rel="stylesheet" href="../lib/ui.css" />
+    <link rel="stylesheet" href="options.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <div class="app-frame">
+        <header class="app-header">
+          <div class="brand">
+            <div class="brand-mark"></div>
+            <div>
+              <h1 class="brand-title">Options</h1>
+              <div class="brand-subtitle">Configure privacy, screenshots, AI, sync, and export controls</div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="button ghost" id="view-privacy">Privacy policy</button>
+            <button class="button primary" id="export-json">Export JSON</button>
+          </div>
+        </header>
+        <main style="padding:24px;" class="grid-2">
+          <section class="card stack">
+            <div class="section-title"><h2>Tracking</h2><span class="muted">Local first</span></div>
+            <label class="row space-between"><span>Tracking enabled</span><span class="switch" id="tracking-switch"></span></label>
+            <label class="row space-between"><span>Screenshots enabled</span><span class="switch" id="screenshot-switch"></span></label>
+            <label class="field"><span class="label">Screenshot interval (ms)</span><input class="input" id="screenshot-interval" type="number" min="15000" max="60000" step="5000" /></label>
+            <label class="row space-between"><span>Store full URL</span><span class="switch" id="store-full-url-switch"></span></label>
+            <label class="field"><span class="label">Retention days</span><input class="input" id="retention-days" type="number" min="7" max="365" /></label>
+            <label class="field"><span class="label">Daily goal minutes</span><input class="input" id="daily-goal-minutes" type="number" min="7" step="5" /></label>
+          </section>
+          <section class="card stack">
+            <div class="section-title"><h2>AI</h2><span class="muted">Optional insights</span></div>
+            <label class="field"><span class="label">Provider</span>
+              <select class="select" id="api-provider"><option value="openai">OpenAI GPT-4o-mini</option><option value="gemini">Google Gemini 1.5 Flash</option></select>
+            </label>
+            <label class="field"><span class="label">API key</span><input class="input" id="api-key" type="password" placeholder="Encrypted locally when saved" /></label>
+            <label class="row space-between"><span>Cloud sync enabled</span><span class="switch" id="cloud-sync-switch"></span></label>
+            <label class="field"><span class="label">Server URL</span><input class="input" id="server-url" type="url" placeholder="https://your-api.example.com" /></label>
+            <label class="field"><span class="label">Auth token</span><input class="input" id="auth-token" type="password" placeholder="Stored locally" /></label>
+          </section>
+          <section class="card stack">
+            <div class="section-title"><h2>Appearance</h2><span class="muted">Indicator and theme</span></div>
+            <label class="field"><span class="label">Theme</span>
+              <select class="select" id="theme"><option value="dark">Dark</option><option value="light">Light</option></select>
+            </label>
+            <label class="field"><span class="label">Indicator position</span>
+              <select class="select" id="indicator-position"><option value="top-right">Top right</option><option value="top-left">Top left</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option></select>
+            </label>
+            <label class="field"><span class="label">Blocked sites</span><textarea class="textarea" id="distraction-sites" rows="6"></textarea></label>
+          </section>
+          <section class="card stack">
+            <div class="section-title"><h2>Data management</h2><span class="muted">Your data, your control</span></div>
+            <div class="row">
+              <button class="button ghost" id="export-csv">Export CSV</button>
+              <button class="button warning" id="delete-old">Delete old data</button>
+              <button class="button danger" id="delete-all">Delete all data</button>
+            </div>
+            <div class="notice" id="storage-usage">Storage usage loading…</div>
+            <div class="success-box" id="save-status">Settings not saved yet.</div>
+            <div class="row">
+              <button class="button primary" id="save-settings">Save settings</button>
+              <button class="button ghost" id="logout-sync">Disconnect sync</button>
+            </div>
+          </section>
+        </main>
+      </div>
+    </div>
+    <script type="module" src="options.js"></script>
+  </body>
+</html>

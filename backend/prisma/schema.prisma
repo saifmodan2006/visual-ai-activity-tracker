@@ -1,0 +1,94 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String         @map("password_hash")
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+  settings     Json           @default("{}")
+  activities   Activity[]
+  summaries    DailySummary[]
+  apiLogs      ApiLog[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model Activity {
+  id                String   @id @default(uuid())
+  userId            String   @map("user_id")
+  url               String
+  hostname          String
+  title             String
+  category          String
+  startTime         DateTime @map("start_time")
+  endTime           DateTime @map("end_time")
+  durationSeconds   Int      @map("duration_seconds")
+  screenshots       Json     @default("[]")
+  productivityScore Int?     @map("productivity_score")
+  isIdle            Boolean  @default(false) @map("is_idle")
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, startTime])
+  @@index([hostname])
+  @@unique([userId, hostname, startTime])
+  @@map("activities")
+}
+
+model DailySummary {
+  id                  String   @id @default(uuid())
+  userId              String   @map("user_id")
+  date                DateTime @db.Date
+  totalActiveSeconds  Int      @map("total_active_seconds")
+  totalIdleSeconds    Int      @map("total_idle_seconds")
+  categoryBreakdown   Json     @map("category_breakdown")
+  siteBreakdown       Json     @map("site_breakdown")
+  productivityAverage Float?   @map("productivity_average")
+  screenshotCount     Int      @default(0) @map("screenshot_count")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, date])
+  @@map("daily_summaries")
+}
+
+model ApiLog {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  endpoint     String
+  method       String
+  statusCode   Int      @map("status_code")
+  responseTime Int      @map("response_time_ms")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("api_logs")
+}
+
+model RefreshToken {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  tokenHash  String   @map("token_hash")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  revokedAt  DateTime? @map("revoked_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, tokenHash])
+  @@map("refresh_tokens")
+}

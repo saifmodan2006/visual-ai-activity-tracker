@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Visual AI Activity Tracker",
+  "version": "0.1.0",
+  "description": "A privacy-first self-monitoring productivity tracker with optional AI insights.",
+  "permissions": ["activeTab", "tabs", "storage", "unlimitedStorage", "alarms", "scripting", "offscreen", "idle"],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content-script.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "chrome_url_overrides": {
+    "newtab": "dashboard/index.html"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Visual AI Activity Tracker"
+  },
+  "options_page": "options/options.html",
+  "commands": {
+    "toggle-tracking": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+T"
+      },
+      "description": "Toggle activity tracking"
+    }
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "web_accessible_resources": [
+    {
+      "resources": ["assets/recording-indicator.html"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}
