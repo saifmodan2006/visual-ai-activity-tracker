@@ -56,7 +56,7 @@ export class ActivityTracker {
       return;
     }
     const { hostname, fullUrl } = extractUrlParts(url);
-    const category = categorizeLocally(fullUrl, title);
+    const category = categorizeLocally(fullUrl, title, this.currentSettings.customRules);
     this.activeSession = {
       tabId,
       windowId,
@@ -109,7 +109,7 @@ export class ActivityTracker {
     this.activeSession.url = this.currentSettings.storeFullUrl ? fullUrl : hostname ? `https://${hostname}` : fullUrl;
     this.activeSession.hostname = hostname;
     this.activeSession.title = title || this.activeSession.title;
-    const category = categorizeLocally(fullUrl, title || this.activeSession.title);
+    const category = categorizeLocally(fullUrl, title || this.activeSession.title, this.currentSettings.customRules);
     this.activeSession.category = category.category;
     this.activeSession.productivityScore = category.productivityScore;
     this.activeSession.lastUpdateAt = now();
@@ -235,7 +235,10 @@ export class ActivityTracker {
   async resumeFromStorage() {
     const stored = await db.getMeta("activeSession");
     if (stored && stored.tabId && stored.startTime && !stored.endTime) {
-      stored.endTime = now();
+      const lastActive = stored.lastUpdateAt || stored.startTime;
+      const elapsedSinceUpdate = Math.round((now() - lastActive) / 1000);
+      const cappedEndTime = elapsedSinceUpdate > 300 ? lastActive + 300000 : now();
+      stored.endTime = cappedEndTime;
       stored.duration = Math.max(0, Math.round((stored.endTime - stored.startTime) / 1000));
       await db.addActivity(stored);
     }

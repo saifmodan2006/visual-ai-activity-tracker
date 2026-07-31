@@ -146,6 +146,40 @@ export class AiService {
   }
 
   /**
+   * Test an API Key against OpenAI or Gemini models.
+   * @param {string} provider
+   * @param {string} apiKey
+   * @returns {Promise<{success: boolean, message: string}>}
+   */
+  async testApiKey(provider, apiKey) {
+    if (!apiKey) {
+      return { success: false, message: "API key cannot be empty." };
+    }
+    try {
+      if (provider === "openai") {
+        const res = await fetch("https://api.openai.com/v1/models", {
+          headers: { Authorization: `Bearer ${apiKey}` }
+        });
+        if (res.ok) {
+          return { success: true, message: "OpenAI API key validated successfully!" };
+        }
+        const err = await res.json().catch(() => ({}));
+        return { success: false, message: err.error?.message || `HTTP ${res.status}: Invalid key or request.` };
+      } else if (provider === "gemini") {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${encodeURIComponent(apiKey)}`);
+        if (res.ok) {
+          return { success: true, message: "Google Gemini API key validated successfully!" };
+        }
+        const err = await res.json().catch(() => ({}));
+        return { success: false, message: err.error?.message || `HTTP ${res.status}: Invalid key or request.` };
+      }
+      return { success: false, message: "Unknown AI provider." };
+    } catch (error) {
+      return { success: false, message: error?.message || "Network connection failure." };
+    }
+  }
+
+  /**
    * @param {Array<any>} activities
    * @returns {Promise<{insights: string[], recommendations: string[]}>}
    */
@@ -173,23 +207,48 @@ export class AiService {
    */
   localInsights(activities) {
     const topHosts = new Map();
+    const categoryTotals = new Map();
+    let totalScoreSum = 0;
+    let scoreCount = 0;
+    let totalActiveSeconds = 0;
+
     for (const activity of activities) {
       const key = activity.hostname || "unknown";
-      topHosts.set(key, (topHosts.get(key) || 0) + (activity.duration || 0));
+      const dur = activity.duration || 0;
+      topHosts.set(key, (topHosts.get(key) || 0) + dur);
+      const cat = activity.category || "other";
+      categoryTotals.set(cat, (categoryTotals.get(cat) || 0) + dur);
+      if (typeof activity.productivityScore === "number") {
+        totalScoreSum += activity.productivityScore;
+        scoreCount += 1;
+      }
+      totalActiveSeconds += dur;
     }
-    const topSite = Array.from(topHosts.entries()).sort((left, right) => right[1] - left[1])[0]?.[0] || "your current mix";
-    const activeSeconds = activities.reduce((total, item) => total + (item.duration || 0), 0);
-    return {
-      insights: [
-        `You tracked ${Math.round(activeSeconds / 60)} minutes of browsing activity.`,
-        `Your most active site was ${topSite}.`,
-        "Local heuristics are in use, so your data stays on-device unless you opt in to AI."
-      ],
-      recommendations: [
-        "Batch similar tasks to reduce tab switching.",
-        "Keep distracting sites out of your active work window."
-      ]
-    };
+
+    const sortedSites = Array.from(topHosts.entries()).sort((left, right) => right[1] - left[1]);
+    const topSite = sortedSites[0]?.[0] || "your browser";
+    const topSiteMinutes = Math.round((sortedSites[0]?.[1] || 0) / 60);
+    const avgScore = scoreCount > 0 ? (totalScoreSum / scoreCount).toFixed(1) : "N/A";
+    const totalMinutes = Math.round(totalActiveSeconds / 60);
+
+    const workSeconds = categoryTotals.get("work") || 0;
+    const learningSeconds = categoryTotals.get("learning") || 0;
+    const productiveMinutes = Math.round((workSeconds + learningSeconds) / 60);
+
+    const insights = [
+      `Tracked ${totalMinutes} total minutes with a productivity score averaging ${avgScore}/10.`,
+      `Your most engaged site was ${topSite} (${topSiteMinutes} min).`,
+      `Spent ${productiveMinutes} minutes on focused Work & Learning tools today.`
+    ];
+
+    const recommendations = [];
+    if (categoryTotals.get("social") > 1800 || categoryTotals.get("entertainment") > 1800) {
+      recommendations.push("Consider activating Focus Mode during work sessions to minimize distracting site visits.");
+    }
+    recommendations.push("Batch similar browsing tasks together to stay in flow state.");
+    recommendations.push("Review custom categorization rules in Settings for personalized activity tracking.");
+
+    return { insights, recommendations };
   }
 
   /**

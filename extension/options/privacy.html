@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Visual AI Activity Tracker - Privacy Policy</title>
+    <link rel="stylesheet" href="../lib/ui.css" />
+    <style>
+      .privacy-card {
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        background: var(--card-bg);
+        padding: 20px 24px;
+        margin-bottom: 16px;
+      }
+      .privacy-card h2 {
+        font-size: 16px;
+        font-weight: 700;
+        margin-top: 0;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .privacy-card ul {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--text);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+      .privacy-card p {
+        margin: 0 0 10px 0;
+        color: var(--muted);
+        line-height: 1.6;
+        font-size: 14px;
+      }
+      .badge-yes {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(34,197,94,0.15);
+        color: #22c55e;
+        font-weight: 700;
+        font-size: 11px;
+        margin-right: 6px;
+      }
+      .badge-no {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 999px;
+        background: rgba(239,68,68,0.15);
+        color: #ef4444;
+        font-weight: 700;
+        font-size: 11px;
+        margin-right: 6px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app-shell" style="max-width:900px;">
+      <div class="app-frame">
+        <header class="app-header">
+          <div class="brand">
+            <div class="brand-mark"></div>
+            <div>
+              <h1 class="brand-title">Privacy Policy & Guarantees</h1>
+              <div class="brand-subtitle">Visual AI Activity Tracker — 100% Local-First & Privacy-Focused</div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="button primary" id="back-options">⚙️ Back to Options</button>
+            <button class="button ghost" id="back-dashboard">📊 Dashboard</button>
+          </div>
+        </header>
+
+        <main style="padding:28px;">
+          <div class="privacy-card">
+            <h2>🛡️ Our Core Privacy Guarantee</h2>
+            <p>Visual AI Activity Tracker is engineered strictly for personal self-monitoring. All activity tracking and data processing occur locally on your own computer inside your Chrome browser's sandboxed storage.</p>
+            <p>We do not run third-party tracking scripts, analytics SDKs, advertising networks, or background diagnostic reporting.</p>
+          </div>
+
+          <div class="privacy-card">
+            <h2>📥 Data Stored Locally On Your Device</h2>
+            <ul>
+              <li><span class="badge-yes">LOCAL</span> <strong>Active Webpage URLs & Titles:</strong> Logged only while tracking is enabled.</li>
+              <li><span class="badge-yes">LOCAL</span> <strong>Timestamps & Durations:</strong> Session start, end, active seconds, and idle state.</li>
+              <li><span class="badge-yes">LOCAL</span> <strong>Activity Categories & Scores:</strong> Inferred locally via domain & title pattern rules.</li>
+              <li><span class="badge-yes">LOCAL</span> <strong>Screenshots (Optional):</strong> Low-resolution compressed thumbnails stored in IndexedDB if screenshot capture is enabled.</li>
+              <li><span class="badge-yes">LOCAL</span> <strong>API Keys (Encrypted):</strong> Stored locally using AES-GCM 256-bit cryptography.</li>
+            </ul>
+          </div>
+
+          <div class="privacy-card">
+            <h2>🚫 Data We NEVER Collect or Monitor</h2>
+            <ul>
+              <li><span class="badge-no">NEVER</span> <strong>Keystrokes & Form Inputs:</strong> Never captured or inspected.</li>
+              <li><span class="badge-no">NEVER</span> <strong>Passwords & Credit Cards:</strong> Automatic password field detection pauses screenshots.</li>
+              <li><span class="badge-no">NEVER</span> <strong>Clipboard & Local Files:</strong> Never accessed or read.</li>
+              <li><span class="badge-no">NEVER</span> <strong>Incognito Browsing:</strong> Incognito tabs are completely ignored and tracking automatically pauses.</li>
+              <li><span class="badge-no">NEVER</span> <strong>Third-Party Telemetry:</strong> No external analytics services or ad pixels.</li>
+            </ul>
+          </div>
+
+          <div class="privacy-card">
+            <h2>🤖 Optional AI Insights & Cloud Sync</h2>
+            <p><strong>AI Features:</strong> If you explicitly configure an OpenAI or Google Gemini API key, requests are transmitted directly from your browser to your provider's API. No intermediate proxy servers are used.</p>
+            <p><strong>Cloud Sync:</strong> Cloud sync is disabled by default. If enabled, session metrics sync only to your configured server URL using your authorization credentials.</p>
+          </div>
+
+          <div class="privacy-card">
+            <h2>🎛️ Your Controls & Rights</h2>
+            <ul>
+              <li>Pause or resume activity tracking at any time using the extension icon or floating pill.</li>
+              <li>Turn off screenshot capture completely in Options.</li>
+              <li>Export all your data into CSV or JSON format at any time.</li>
+              <li>Delete specific session entries or wipe all stored local data with one click.</li>
+            </ul>
+          </div>
+
+          <div class="row space-between" style="margin-top:20px;">
+            <span class="muted" style="font-size:12px;">Visual AI Activity Tracker v0.1.0 — Privacy Policy</span>
+            <button class="button primary" id="bottom-back">Back to Options</button>
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <script type="module">
+      document.getElementById("back-options")?.addEventListener("click", () => window.location.href = "options.html");
+      document.getElementById("bottom-back")?.addEventListener("click", () => window.location.href = "options.html");
+      document.getElementById("back-dashboard")?.addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("dashboard/index.html") }));
+    </script>
+  </body>
+</html>

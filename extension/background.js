@@ -12,7 +12,10 @@ let currentTabSnapshot = null;
  * @returns {Promise<void>}
  */
 async function initialize() {
-  const settings = await db.getSettings();
+  let settings = await db.getSettings();
+  if (settings.showFloatingIndicator === undefined) {
+    settings = await db.saveSettings({ showFloatingIndicator: false });
+  }
   await tracker.configure(settings);
   await tracker.resumeFromStorage();
   await chrome.idle.setDetectionInterval?.(60);
@@ -227,6 +230,14 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
+  if (message?.type === "TEST_API_KEY") {
+    import("./lib/ai-service.js").then(async ({ AiService }) => {
+      const service = new AiService();
+      const res = await service.testApiKey(message.provider, message.apiKey);
+      sendResponse(res);
+    });
+    return true;
+  }
   if (message?.type === "OPEN_OPTIONS") {
     chrome.runtime.openOptionsPage();
     sendResponse({ ok: true });
@@ -254,6 +265,19 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return undefined;
 });
 
+chrome.commands?.onCommand?.addListener(async (command) => {
+  if (command === "toggle-tracking") {
+    const settings = await db.getSettings();
+    const nextEnabled = !settings.trackingEnabled;
+    await db.saveSettings({ trackingEnabled: nextEnabled });
+    await tracker.setTrackingEnabled(nextEnabled);
+    const activeTab = await getFocusedTab();
+    if (activeTab) {
+      await sendTrackingState(activeTab.id, nextEnabled ? "recording" : "paused", await db.getMeta("activeSession"), await db.getSettings());
+    }
+  }
+});
+
 chrome.tabs.onActivated.addListener(async ({ tabId }) => {
   const tab = await chrome.tabs.get(tabId).catch(() => null);
   if (tab) {
@@ -267,8 +291,8 @@ chrome.tabs.onUpdated.addListener(async (tabId, changeInfo, tab) => {
     await handleActiveTab(tab);
     await maybeShowFocusOverlay(tab);
   }
-  if (changeInfo.url && tracker.activeSession?.tabId === tabId) {
-    await syncTitleAndCategory(tab);
+  if (changeInfo.url && tab.active) {
+    await handleActiveTab(tab);
     await maybeShowFocusOverlay(tab);
   }
 });

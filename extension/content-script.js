@@ -10,46 +10,73 @@ let passwordFocusTimer = null;
 /**
  * Initialize the page-level UI elements used for tracking transparency.
  */
-function initIndicator() {
-  if (document.getElementById(INDICATOR_ID)) {
+/**
+ * Initialize the page-level UI elements used for tracking transparency.
+ * @param {any} [settings]
+ */
+function initIndicator(settings) {
+  let indicator = document.getElementById(INDICATOR_ID);
+
+  // Default to hidden on all web pages unless explicitly enabled in Options
+  const isEnabled = settings?.showFloatingIndicator === true;
+  if (!isEnabled || sessionStorage.getItem("visual-ai-indicator-hidden") === "true") {
+    if (indicator) {
+      indicator.remove();
+    }
     return;
   }
-  const indicator = document.createElement("div");
-  indicator.id = INDICATOR_ID;
-  indicator.style.cssText = [
-    "position:fixed",
-    "top:16px",
-    "right:16px",
-    "z-index:2147483647",
-    "display:flex",
-    "align-items:center",
-    "gap:8px",
-    "padding:10px 12px",
-    "border-radius:9999px",
-    "background:rgba(15,23,42,0.92)",
-    "color:#e2e8f0",
-    "font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif",
-    "font-size:12px",
-    "line-height:1",
-    "box-shadow:0 12px 30px rgba(15,23,42,0.35)",
-    "backdrop-filter:blur(12px)",
-    "transition:opacity 180ms ease, transform 180ms ease",
-    "cursor:grab"
-  ].join(";");
-  indicator.innerHTML = `
-    <span data-pill="state" style="display:inline-flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap;">🔴 Recording</span>
-    <span data-pill="duration" style="color:#cbd5e1;white-space:nowrap;">0m 00s</span>
-    <button data-action="pause" style="border:none;border-radius:9999px;background:#ef4444;color:white;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Pause</button>
-    <button data-action="settings" style="border:none;border-radius:9999px;background:rgba(148,163,184,0.18);color:#e2e8f0;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;">Settings</button>
-  `;
-  indicator.addEventListener("mouseenter", showIndicator);
-  indicator.addEventListener("mouseleave", scheduleIndicatorFade);
-  indicator.addEventListener("pointerdown", beginDrag);
-  indicator.querySelector('[data-action="pause"]').addEventListener("click", toggleTrackingFromIndicator);
-  indicator.querySelector('[data-action="settings"]').addEventListener("click", openOptionsPage);
-  document.documentElement.appendChild(indicator);
-  showIndicator();
-  scheduleIndicatorFade();
+
+  const position = settings?.indicatorPosition || "top-right";
+  let posStyles = "top:16px;right:16px;";
+  if (position === "top-left") posStyles = "top:16px;left:16px;";
+  else if (position === "bottom-right") posStyles = "bottom:16px;right:16px;";
+  else if (position === "bottom-left") posStyles = "bottom:16px;left:16px;";
+
+  if (!indicator) {
+    indicator = document.createElement("div");
+    indicator.id = INDICATOR_ID;
+    indicator.style.cssText = [
+      "position:fixed",
+      posStyles,
+      "z-index:2147483647",
+      "display:flex",
+      "align-items:center",
+      "gap:8px",
+      "padding:8px 14px",
+      "border-radius:9999px",
+      "background:rgba(15,23,42,0.92)",
+      "border:1px solid rgba(148,163,184,0.2)",
+      "color:#e2e8f0",
+      "font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif",
+      "font-size:12px",
+      "line-height:1",
+      "box-shadow:0 12px 30px rgba(15,23,42,0.5), inset 0 1px 0 rgba(255,255,255,0.1)",
+      "backdrop-filter:blur(16px)",
+      "transition:opacity 200ms ease, transform 200ms ease, background 200ms ease",
+      "cursor:grab",
+      "user-select:none"
+    ].join(";");
+    indicator.innerHTML = `
+      <span data-pill="state" style="display:inline-flex;align-items:center;gap:6px;font-weight:700;white-space:nowrap;">🔴 Recording</span>
+      <span data-pill="category" style="display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:11px;font-weight:600;background:rgba(56,189,248,0.18);color:#38bdf8;">Work</span>
+      <span data-pill="duration" style="color:#cbd5e1;font-weight:600;white-space:nowrap;">0m 00s</span>
+      <button data-action="pause" style="border:none;border-radius:9999px;background:#ef4444;color:white;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:transform 120ms ease;">Pause</button>
+      <button data-action="settings" style="border:none;border-radius:9999px;background:rgba(148,163,184,0.18);color:#e2e8f0;padding:5px 10px;font-size:11px;font-weight:700;cursor:pointer;transition:transform 120ms ease;">Settings</button>
+      <button data-action="close" title="Hide indicator on this tab" style="border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:12px;padding:2px 4px;margin-left:2px;line-height:1;transition:color 150ms ease;">✕</button>
+    `;
+    indicator.addEventListener("mouseenter", showIndicator);
+    indicator.addEventListener("mouseleave", scheduleIndicatorFade);
+    indicator.addEventListener("pointerdown", beginDrag);
+    indicator.querySelector('[data-action="pause"]').addEventListener("click", toggleTrackingFromIndicator);
+    indicator.querySelector('[data-action="settings"]').addEventListener("click", openOptionsPage);
+    indicator.querySelector('[data-action="close"]').addEventListener("click", () => {
+      sessionStorage.setItem("visual-ai-indicator-hidden", "true");
+      indicator.remove();
+    });
+    document.documentElement.appendChild(indicator);
+    showIndicator();
+    scheduleIndicatorFade();
+  }
 }
 
 /**
@@ -85,7 +112,7 @@ function scheduleIndicatorFade() {
  */
 function beginDrag(event) {
   const indicator = document.getElementById(INDICATOR_ID);
-  if (!indicator || event.button !== 0) {
+  if (!indicator || event.button !== 0 || event.target.tagName === "BUTTON") {
     return;
   }
   dragState = {
@@ -101,6 +128,7 @@ function beginDrag(event) {
     indicator.style.left = `${Math.max(8, moveEvent.clientX - dragState.offsetX)}px`;
     indicator.style.top = `${Math.max(8, moveEvent.clientY - dragState.offsetY)}px`;
     indicator.style.right = "auto";
+    indicator.style.bottom = "auto";
   };
   const upListener = () => {
     dragState = null;
@@ -140,14 +168,17 @@ async function openOptionsPage() {
 function updateIndicatorState(state, session, settings) {
   indicatorState = state;
   sessionData = session || sessionData;
+  initIndicator(settings);
   const indicator = document.getElementById(INDICATOR_ID);
   if (!indicator) {
     return;
   }
   const stateNode = indicator.querySelector('[data-pill="state"]');
+  const categoryNode = indicator.querySelector('[data-pill="category"]');
   const durationNode = indicator.querySelector('[data-pill="duration"]');
   const pauseButton = indicator.querySelector('[data-action="pause"]');
   const trackingEnabled = settings?.trackingEnabled ?? state === "recording";
+
   if (stateNode) {
     if (state === "recording") {
       stateNode.textContent = "🔴 Recording";
@@ -156,7 +187,7 @@ function updateIndicatorState(state, session, settings) {
       stateNode.textContent = "🟡 Idle";
       indicator.style.background = "rgba(120,53,15,0.92)";
     } else if (state === "incognito-paused") {
-      stateNode.textContent = "⚪ Paused - Incognito";
+      stateNode.textContent = "⚪ Incognito";
       indicator.style.background = "rgba(71,85,105,0.92)";
     } else if (state === "focus-mode") {
       stateNode.textContent = "🟠 Focus Mode";
@@ -166,9 +197,17 @@ function updateIndicatorState(state, session, settings) {
       indicator.style.background = "rgba(51,65,85,0.92)";
     }
   }
+
+  if (categoryNode) {
+    const cat = session?.category || "other";
+    const catLabel = cat.charAt(0).toUpperCase() + cat.slice(1);
+    categoryNode.textContent = catLabel;
+  }
+
   if (durationNode) {
     durationNode.textContent = session?.formattedDuration || "0m 00s";
   }
+
   if (pauseButton) {
     pauseButton.textContent = trackingEnabled ? "Pause" : "Resume";
   }
@@ -249,7 +288,7 @@ function handleFocusIn(event) {
  */
 function handleMessage(message) {
   if (message.type === "TRACKER_STATE") {
-    initIndicator();
+    initIndicator(message.settings);
     updateIndicatorState(message.state, message.session, message.settings);
     return;
   }

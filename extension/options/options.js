@@ -10,12 +10,16 @@ const fields = {
   dailyGoalMinutes: document.getElementById("daily-goal-minutes"),
   apiProvider: document.getElementById("api-provider"),
   apiKey: document.getElementById("api-key"),
+  testApiKeyBtn: document.getElementById("test-api-key"),
+  testKeyResult: document.getElementById("test-key-result"),
   cloudSyncSwitch: document.getElementById("cloud-sync-switch"),
   serverUrl: document.getElementById("server-url"),
   authToken: document.getElementById("auth-token"),
   theme: document.getElementById("theme"),
   indicatorPosition: document.getElementById("indicator-position"),
+  showIndicatorSwitch: document.getElementById("show-indicator-switch"),
   distractionSites: document.getElementById("distraction-sites"),
+  customRules: document.getElementById("custom-rules"),
   saveStatus: document.getElementById("save-status"),
   storageUsage: document.getElementById("storage-usage")
 };
@@ -25,19 +29,36 @@ const fields = {
  */
 async function initOptions() {
   const settings = await db.getSettings();
+  if (settings.theme === "light") {
+    document.body.classList.add("light-theme");
+    document.body.setAttribute("data-theme", "light");
+  } else {
+    document.body.classList.remove("light-theme");
+    document.body.setAttribute("data-theme", "dark");
+  }
+
   fields.trackingSwitch.classList.toggle("on", settings.trackingEnabled);
   fields.screenshotSwitch.classList.toggle("on", settings.screenshotEnabled);
   fields.storeFullUrlSwitch.classList.toggle("on", settings.storeFullUrl);
   fields.cloudSyncSwitch.classList.toggle("on", settings.cloudSyncEnabled);
+  fields.showIndicatorSwitch.classList.toggle("on", settings.showFloatingIndicator !== false);
   fields.screenshotInterval.value = settings.screenshotInterval;
   fields.retentionDays.value = settings.maxDataAge;
   fields.dailyGoalMinutes.value = settings.dailyGoalMinutes;
   fields.apiProvider.value = settings.apiProvider || "openai";
-  fields.theme.value = settings.theme;
+  fields.theme.value = settings.theme || "dark";
   fields.indicatorPosition.value = settings.indicatorPosition || "top-right";
   fields.distractionSites.value = (settings.distractionSites || DEFAULT_SETTINGS.distractionSites).join("\n");
   fields.serverUrl.value = settings.serverUrl || "";
   fields.authToken.value = settings.authToken || "";
+
+  // Parse custom domain rules into lines
+  if (Array.isArray(settings.customRules)) {
+    fields.customRules.value = settings.customRules.map(r => `${r.pattern}=${r.category}`).join("\n");
+  } else {
+    fields.customRules.value = "";
+  }
+
   fields.storageUsage.textContent = await buildStorageMessage();
 }
 
@@ -51,7 +72,7 @@ async function buildStorageMessage() {
   }
   const usageMb = (usage.usage / (1024 * 1024)).toFixed(1);
   const quotaMb = (usage.quota / (1024 * 1024)).toFixed(1);
-  return `IndexedDB usage: ${usageMb} MB of ${quotaMb} MB (${Math.round(usage.percent * 100)}%).`;
+  return `IndexedDB storage usage: ${usageMb} MB of ${quotaMb} MB (${Math.round(usage.percent * 100)}%).`;
 }
 
 /**
@@ -69,11 +90,31 @@ async function saveSettings() {
   const screenshotInterval = clamp(Number(fields.screenshotInterval.value || 30000), 15000, 60000);
   const maxDataAge = clamp(Number(fields.retentionDays.value || 90), 7, 365);
   const distractionSites = fields.distractionSites.value.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+
+  // Parse custom domain rules
+  const customRules = fields.customRules.value.split(/\n+/).map(line => {
+    const parts = line.split("=");
+    if (parts.length >= 2) {
+      return { pattern: parts[0].trim(), category: parts[1].trim() };
+    }
+    return null;
+  }).filter(Boolean);
+
   const secretId = "api-key-secret";
   let apiKeyCiphertext = "";
   if (fields.apiKey.value.trim()) {
     apiKeyCiphertext = await encryptSecret(fields.apiKey.value.trim(), secretId);
   }
+
+  const newTheme = fields.theme.value;
+  if (newTheme === "light") {
+    document.body.classList.add("light-theme");
+    document.body.setAttribute("data-theme", "light");
+  } else {
+    document.body.classList.remove("light-theme");
+    document.body.setAttribute("data-theme", "dark");
+  }
+
   await db.saveSettings({
     trackingEnabled: fields.trackingSwitch.classList.contains("on"),
     screenshotEnabled: fields.screenshotSwitch.classList.contains("on"),
@@ -82,17 +123,49 @@ async function saveSettings() {
     maxDataAge,
     dailyGoalMinutes: clamp(Number(fields.dailyGoalMinutes.value || 240), 7, 1440),
     apiProvider: fields.apiProvider.value,
-    apiKey: apiKeyCiphertext,
+    apiKey: apiKeyCiphertext || (await db.getSettings()).apiKey,
     cloudSyncEnabled: fields.cloudSyncSwitch.classList.contains("on"),
     serverUrl: fields.serverUrl.value.trim(),
     authToken: fields.authToken.value.trim(),
-    theme: fields.theme.value,
+    theme: newTheme,
     indicatorPosition: fields.indicatorPosition.value,
-    distractionSites
+    showFloatingIndicator: fields.showIndicatorSwitch.classList.contains("on"),
+    distractionSites,
+    customRules
   });
+
   await chrome.runtime.sendMessage({ type: "SETTINGS_UPDATED" });
-  fields.saveStatus.textContent = "Settings saved locally.";
+  fields.saveStatus.textContent = "Settings saved successfully.";
   fields.storageUsage.textContent = await buildStorageMessage();
+}
+
+/**
+ * Test the entered API Key
+ */
+async function testApiKey() {
+  const rawKey = fields.apiKey.value.trim();
+  const provider = fields.apiProvider.value;
+  if (!rawKey) {
+    fields.testKeyResult.textContent = "⚠️ Please enter an API key to test.";
+    fields.testKeyResult.style.color = "var(--warning)";
+    return;
+  }
+  fields.testKeyResult.textContent = "Testing API key...";
+  fields.testKeyResult.style.color = "var(--muted)";
+
+  const response = await chrome.runtime.sendMessage({
+    type: "TEST_API_KEY",
+    provider,
+    apiKey: rawKey
+  });
+
+  if (response?.success) {
+    fields.testKeyResult.textContent = `✅ ${response.message}`;
+    fields.testKeyResult.style.color = "var(--accent-2)";
+  } else {
+    fields.testKeyResult.textContent = `❌ ${response?.message || 'Key validation failed.'}`;
+    fields.testKeyResult.style.color = "var(--danger)";
+  }
 }
 
 /**
@@ -256,13 +329,17 @@ fields.trackingSwitch.addEventListener("click", () => toggleSwitch("trackingSwit
 fields.screenshotSwitch.addEventListener("click", () => toggleSwitch("screenshotSwitch"));
 fields.storeFullUrlSwitch.addEventListener("click", () => toggleSwitch("storeFullUrlSwitch"));
 fields.cloudSyncSwitch.addEventListener("click", () => toggleSwitch("cloudSyncSwitch"));
+fields.showIndicatorSwitch.addEventListener("click", () => toggleSwitch("showIndicatorSwitch"));
+fields.testApiKeyBtn.addEventListener("click", testApiKey);
 document.getElementById("save-settings").addEventListener("click", saveSettings);
 document.getElementById("export-json").addEventListener("click", () => exportData("json"));
 document.getElementById("export-csv").addEventListener("click", () => exportData("csv"));
 document.getElementById("delete-all").addEventListener("click", () => deleteAllData(true));
 document.getElementById("delete-old").addEventListener("click", deleteOldData);
 document.getElementById("logout-sync").addEventListener("click", disconnectSync);
-document.getElementById("view-privacy").addEventListener("click", () => chrome.tabs.create({ url: chrome.runtime.getURL("PRIVACY.md") }).catch(() => undefined));
+document.getElementById("view-privacy").addEventListener("click", () => {
+  window.location.href = "privacy.html";
+});
 
 initOptions().catch(() => {
   fields.saveStatus.textContent = "Failed to load options.";

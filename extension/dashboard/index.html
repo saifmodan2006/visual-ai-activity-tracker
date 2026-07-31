@@ -12,13 +12,18 @@
       <div class="app-frame">
         <header class="app-header">
           <div class="brand">
-            <div class="brand-mark"></div>
+            <div class="brand-mark">📊</div>
             <div>
               <h1 class="brand-title">Visual AI Activity Tracker</h1>
               <div class="brand-subtitle">Private, local-first analytics for your own browsing activity</div>
             </div>
           </div>
           <div class="toolbar">
+            <div class="range-selector" style="display:flex;gap:4px;background:rgba(148,163,184,0.12);padding:3px;border-radius:9999px;">
+              <button class="button small ghost active" data-range="today">Today</button>
+              <button class="button small ghost" data-range="7d">7 Days</button>
+              <button class="button small ghost" data-range="30d">30 Days</button>
+            </div>
             <span class="pill primary" id="tracking-pill">Tracking active</span>
             <button class="button ghost" id="open-options">Settings</button>
             <button class="button success" id="toggle-focus">Focus Mode</button>
@@ -28,61 +33,78 @@
           <section class="card-grid cols-4" id="top-metrics">
             <div class="card metric"><div class="metric-value" id="goal-progress">0%</div><div class="metric-label">Goal progress</div></div>
             <div class="card metric"><div class="metric-value" id="current-streak">0</div><div class="metric-label">Day streak</div></div>
-            <div class="card metric"><div class="metric-value" id="daily-active">0m</div><div class="metric-label">Active today</div></div>
+            <div class="card metric"><div class="metric-value" id="daily-active">0m</div><div class="metric-label">Active time</div></div>
             <div class="card metric"><div class="metric-value" id="daily-score">0.0</div><div class="metric-label">Productivity avg</div></div>
           </section>
           <section class="grid-2">
             <div class="card">
-              <div class="section-title"><h2>Category mix</h2><span class="muted">Today</span></div>
+              <div class="section-title"><h2 id="cat-title">Category mix</h2><span class="muted" id="cat-range">Today</span></div>
               <canvas class="chart-canvas" id="category-chart"></canvas>
             </div>
             <div class="card">
-              <div class="section-title"><h2>Productivity trend</h2><span class="muted">Last 14 days</span></div>
+              <div class="section-title"><h2>Productivity trend</h2><span class="muted">14-day history</span></div>
               <canvas class="chart-canvas" id="trend-chart"></canvas>
             </div>
           </section>
           <section class="grid-2">
             <div class="card">
-              <div class="section-title"><h2>Activity heatmap</h2><span class="muted">Last 7 days</span></div>
+              <div class="section-title"><h2>Activity heatmap</h2><span class="muted">24x7 activity intensity</span></div>
               <canvas class="chart-canvas tall" id="heatmap-chart"></canvas>
             </div>
             <div class="card">
-              <div class="section-title"><h2>Top sites</h2><span class="muted">Today</span></div>
+              <div class="section-title"><h2 id="sites-title">Top sites</h2><span class="muted" id="sites-range">Today</span></div>
               <canvas class="chart-canvas tall" id="sites-chart"></canvas>
             </div>
           </section>
           <section class="grid-2">
             <div class="card">
-              <div class="section-title"><h2>Insights</h2><span class="muted">Generated locally or by AI</span></div>
+              <div class="section-title"><h2>Insights & Recommendations</h2><span class="muted">Local & AI Analysis</span></div>
               <div class="stack" id="insights-list"></div>
             </div>
             <div class="card">
-              <div class="section-title"><h2>Goals</h2><span class="muted">Daily focus target</span></div>
+              <div class="section-title"><h2>Focus & Goals</h2><span class="muted">Daily focus target</span></div>
               <div class="stack">
                 <div class="field">
-                  <label class="label" for="goal-minutes">Goal minutes</label>
+                  <label class="label" for="goal-minutes">Goal minutes per day</label>
                   <input class="input" id="goal-minutes" type="number" min="7" step="5" />
                 </div>
                 <div class="field">
-                  <label class="label" for="distraction-limit">Distraction limit</label>
-                  <input class="input" id="distraction-limit" type="number" min="0" step="5" />
+                  <label class="label" for="distraction-limit">Distracting sites count</label>
+                  <input class="input" id="distraction-limit" type="number" min="0" step="1" />
                 </div>
                 <button class="button primary" id="save-goals">Save goals</button>
               </div>
             </div>
           </section>
           <section class="card">
-            <div class="section-title"><h2>Recent activity</h2><span class="muted">Latest sessions and thumbnails</span></div>
+            <div class="section-title">
+              <h2>Recent activity</h2>
+              <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+                <select class="select" id="filter-category" style="max-width:140px;padding:6px 10px;font-size:12px;">
+                  <option value="all">All Categories</option>
+                  <option value="work">💼 Work</option>
+                  <option value="learning">📚 Learning</option>
+                  <option value="social">💬 Social</option>
+                  <option value="entertainment">🎮 Entertainment</option>
+                  <option value="shopping">🛍️ Shopping</option>
+                  <option value="news">📰 News</option>
+                  <option value="other">🌐 Other</option>
+                </select>
+                <input class="input" id="search-activity" type="text" placeholder="Search site or title..." style="max-width:180px;padding:6px 12px;font-size:12px;" />
+                <span class="muted">Latest sessions and thumbnails</span>
+              </div>
+            </div>
             <div class="thumbnail-grid" id="recent-grid"></div>
           </section>
         </main>
       </div>
     </div>
 
+    <!-- Onboarding Modal -->
     <div class="modal-backdrop" id="onboarding-modal">
       <div class="modal">
         <h2 style="margin-top:0;">Welcome to Visual AI Activity Tracker</h2>
-        <p class="muted">This extension tracks your own browsing activity locally. Screenshots are optional, you can pause at any time, and you can export or delete your data whenever you want.</p>
+        <p class="muted">This extension tracks your browsing activity locally on your device. Screenshots are optional, you can pause tracking at any time, and your data remains 100% private.</p>
         <div class="divider"></div>
         <div class="stack">
           <label class="row"><input type="checkbox" id="agree-checkbox" /> <span>I understand and agree to local activity tracking on my own device.</span></label>
@@ -93,6 +115,18 @@
           <span class="muted">Tracking will not start until you confirm.</span>
           <button class="button primary" id="accept-onboarding">Start tracking</button>
         </div>
+      </div>
+    </div>
+
+    <!-- Thumbnail Preview Modal -->
+    <div class="modal-backdrop" id="preview-modal">
+      <div class="modal" style="max-width:800px;text-align:center;">
+        <div class="row space-between" style="margin-bottom:14px;">
+          <h3 id="preview-title" style="margin:0;">Site Screenshot</h3>
+          <button class="button small ghost" id="close-preview">✕ Close</button>
+        </div>
+        <img id="preview-img" src="" alt="Thumbnail preview" style="max-width:100%;max-height:480px;border-radius:16px;border:1px solid var(--border);" />
+        <div class="muted" id="preview-meta" style="margin-top:12px;font-size:13px;"></div>
       </div>
     </div>
 

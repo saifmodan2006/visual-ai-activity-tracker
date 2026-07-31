@@ -27,6 +27,8 @@ export const DEFAULT_SETTINGS = Object.freeze({
   dailyGoalMinutes: 240,
   theme: "dark",
   indicatorPosition: "top-right",
+  showFloatingIndicator: false,
+  customRules: [],
   aiRateLimitPerMinute: 1,
   aiRateLimitPerDay: 50,
   storageWarningThresholdMb: 500
@@ -116,7 +118,10 @@ export function normalizeHostname(value) {
  */
 export function matchesHostPattern(hostname, patterns) {
   const normalized = normalizeHostname(hostname);
-  return patterns.some((pattern) => normalized === normalizeHostname(pattern) || normalized.endsWith(`.${normalizeHostname(pattern)}`));
+  return patterns.some((pattern) => {
+    const normP = normalizeHostname(pattern);
+    return normalized === normP || normalized.endsWith(`.${normP}`);
+  });
 }
 
 /**
@@ -194,3 +199,47 @@ export function isDistractingSite(hostname, sites) {
 export function stringOrEmpty(value) {
   return typeof value === "string" ? value : "";
 }
+
+/**
+ * @param {string} category
+ * @returns {string}
+ */
+export function getCategoryColor(category) {
+  const map = {
+    work: "#38bdf8",
+    learning: "#22c55e",
+    social: "#f59e0b",
+    entertainment: "#ef4444",
+    shopping: "#a78bfa",
+    news: "#f97316",
+    other: "#94a3b8"
+  };
+  return map[category?.toLowerCase()] || map.other;
+}
+
+/**
+ * @param {string} category
+ * @returns {string}
+ */
+export function getCategoryIcon(category) {
+  const map = {
+    work: "💼",
+    learning: "📚",
+    social: "💬",
+    entertainment: "🎮",
+    shopping: "🛍️",
+    news: "📰",
+    other: "🌐"
+  };
+  return map[category?.toLowerCase()] || map.other;
+}
+
+/**
+ * @param {string} category
+ * @returns {string}
+ */
+export function getCategoryLabel(category) {
+  if (!category) return "Other";
+  return category.charAt(0).toUpperCase() + category.slice(1);
+}
+

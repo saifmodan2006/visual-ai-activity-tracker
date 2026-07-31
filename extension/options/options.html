@@ -14,18 +14,18 @@
           <div class="brand">
             <div class="brand-mark"></div>
             <div>
-              <h1 class="brand-title">Options</h1>
-              <div class="brand-subtitle">Configure privacy, screenshots, AI, sync, and export controls</div>
+              <h1 class="brand-title">Options & Configuration</h1>
+              <div class="brand-subtitle">Configure privacy, screenshots, AI provider keys, domain rules, and data export controls</div>
             </div>
           </div>
           <div class="toolbar">
-            <button class="button ghost" id="view-privacy">Privacy policy</button>
+            <button class="button ghost" id="view-privacy">Privacy Policy</button>
             <button class="button primary" id="export-json">Export JSON</button>
           </div>
         </header>
         <main style="padding:24px;" class="grid-2">
           <section class="card stack">
-            <div class="section-title"><h2>Tracking</h2><span class="muted">Local first</span></div>
+            <div class="section-title"><h2>Tracking & Privacy</h2><span class="muted">Local first</span></div>
             <label class="row space-between"><span>Tracking enabled</span><span class="switch" id="tracking-switch"></span></label>
             <label class="row space-between"><span>Screenshots enabled</span><span class="switch" id="screenshot-switch"></span></label>
             <label class="field"><span class="label">Screenshot interval (ms)</span><input class="input" id="screenshot-interval" type="number" min="15000" max="60000" step="5000" /></label>
@@ -33,28 +33,54 @@
             <label class="field"><span class="label">Retention days</span><input class="input" id="retention-days" type="number" min="7" max="365" /></label>
             <label class="field"><span class="label">Daily goal minutes</span><input class="input" id="daily-goal-minutes" type="number" min="7" step="5" /></label>
           </section>
+
           <section class="card stack">
-            <div class="section-title"><h2>AI</h2><span class="muted">Optional insights</span></div>
+            <div class="section-title"><h2>AI Services</h2><span class="muted">Optional smart insights</span></div>
             <label class="field"><span class="label">Provider</span>
-              <select class="select" id="api-provider"><option value="openai">OpenAI GPT-4o-mini</option><option value="gemini">Google Gemini 1.5 Flash</option></select>
+              <select class="select" id="api-provider">
+                <option value="openai">OpenAI (GPT-4o-mini)</option>
+                <option value="gemini">Google Gemini (1.5 Flash)</option>
+              </select>
             </label>
-            <label class="field"><span class="label">API key</span><input class="input" id="api-key" type="password" placeholder="Encrypted locally when saved" /></label>
+            <label class="field">
+              <span class="label">API key</span>
+              <div style="display:flex;gap:8px;">
+                <input class="input" id="api-key" type="password" placeholder="Encrypted locally when saved" />
+                <button class="button ghost small" id="test-api-key" style="white-space:nowrap;">Test Key</button>
+              </div>
+              <div id="test-key-result" style="font-size:12px;margin-top:4px;"></div>
+            </label>
             <label class="row space-between"><span>Cloud sync enabled</span><span class="switch" id="cloud-sync-switch"></span></label>
             <label class="field"><span class="label">Server URL</span><input class="input" id="server-url" type="url" placeholder="https://your-api.example.com" /></label>
             <label class="field"><span class="label">Auth token</span><input class="input" id="auth-token" type="password" placeholder="Stored locally" /></label>
           </section>
+
           <section class="card stack">
-            <div class="section-title"><h2>Appearance</h2><span class="muted">Indicator and theme</span></div>
+            <div class="section-title"><h2>Appearance & Categorization</h2><span class="muted">Indicator and custom rules</span></div>
+            <label class="row space-between"><span>Show floating indicator on web pages</span><span class="switch" id="show-indicator-switch"></span></label>
             <label class="field"><span class="label">Theme</span>
-              <select class="select" id="theme"><option value="dark">Dark</option><option value="light">Light</option></select>
+              <select class="select" id="theme">
+                <option value="dark">Dark Theme</option>
+                <option value="light">Light Theme</option>
+              </select>
             </label>
             <label class="field"><span class="label">Indicator position</span>
-              <select class="select" id="indicator-position"><option value="top-right">Top right</option><option value="top-left">Top left</option><option value="bottom-right">Bottom right</option><option value="bottom-left">Bottom left</option></select>
+              <select class="select" id="indicator-position">
+                <option value="top-right">Top right</option>
+                <option value="top-left">Top left</option>
+                <option value="bottom-right">Bottom right</option>
+                <option value="bottom-left">Bottom left</option>
+              </select>
             </label>
-            <label class="field"><span class="label">Blocked sites</span><textarea class="textarea" id="distraction-sites" rows="6"></textarea></label>
+            <label class="field"><span class="label">Blocked / Focus sites (one per line)</span><textarea class="textarea" id="distraction-sites" rows="4"></textarea></label>
+            <label class="field">
+              <span class="label">Custom Domain Category Rules (format: domain=category, e.g. reddit.com=learning)</span>
+              <textarea class="textarea" id="custom-rules" rows="4" placeholder="example.com=work&#10;reddit.com/r/programming=learning"></textarea>
+            </label>
           </section>
+
           <section class="card stack">
-            <div class="section-title"><h2>Data management</h2><span class="muted">Your data, your control</span></div>
+            <div class="section-title"><h2>Data Management</h2><span class="muted">Your data, your control</span></div>
             <div class="row">
               <button class="button ghost" id="export-csv">Export CSV</button>
               <button class="button warning" id="delete-old">Delete old data</button>

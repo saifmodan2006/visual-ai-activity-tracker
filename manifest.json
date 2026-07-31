@@ -40,7 +40,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["extension/assets/recording-indicator.html"],
+      "resources": ["extension/assets/recording-indicator.html", "extension/options/privacy.html"],
       "matches": ["<all_urls>"]
     }
   ]
